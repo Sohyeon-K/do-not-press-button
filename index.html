@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Do Not Press This Button</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 221, 238, 0.9), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(221, 238, 255, 0.9), transparent 35%),
+        linear-gradient(135deg, #fff7fb, #f7fbff);
+      color: #222;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 28px 18px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .card {
+      width: min(720px, 100%);
+      padding: 34px 28px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: #ffe4f1;
+      color: #bd2367;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(34px, 7vw, 58px);
+      line-height: 1.05;
+      letter-spacing: -1.8px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.15;
+      letter-spacing: -1.2px;
+    }
+
+    p {
+      margin: 0;
+      color: #555;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    .description {
+      margin-top: 14px;
+      margin-bottom: 26px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      width: min(340px, 100%);
+      padding: 15px 17px;
+      border: 2px solid #f1c9d9;
+      border-radius: 16px;
+      outline: none;
+      font-size: 16px;
+      background: white;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #ff6aa7;
+      box-shadow: 0 0 0 4px rgba(255, 106, 167, 0.15);
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 22px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:not(.main-button):hover {
+      transform: translateY(-2px);
+    }
+
+    button:not(.main-button):active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .main-button:hover {
+      transform: translate(-50%, -50%) rotate(var(--rotation, 0deg));
+    }
+
+    .main-button:active {
+      transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(0.98);
+    }
+
+    .primary-button {
+      background: #ff4f9a;
+      color: white;
+      box-shadow: 0 12px 24px rgba(255, 79, 154, 0.28);
+    }
+
+    .primary-button:hover {
+      background: #f03587;
+    }
+
+    .secondary-button {
+      background: #222;
+      color: white;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    .danger-button {
+      background: #ff3860;
+      color: white;
+      box-shadow: 0 14px 30px rgba(255, 56, 96, 0.28);
+    }
+
+    .game-card {
+      width: min(860px, 100%);
+      min-height: 620px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #f3f3f3;
+      color: #444;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .status-pill strong {
+      color: #ff3b8d;
+    }
+
+    .message-box {
+      height: 126px;
+      min-height: 126px;
+      max-height: 126px;
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #fff0f7, #f2f8ff);
+      border: 1px solid rgba(255, 160, 205, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .message {
+      width: 100%;
+      line-height: 1.25;
+      font-weight: 950;
+      letter-spacing: -0.7px;
+      color: #202020;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
+    }
+
+    .button-field {
+      position: relative;
+      flex: 1;
+      min-height: 330px;
+      border-radius: 26px;
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.68) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.68) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.68) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.68) 75%);
+      background-size: 28px 28px;
+      background-position: 0 0, 0 14px, 14px -14px, -14px 0px;
+      background-color: rgba(255, 222, 239, 0.36);
+      overflow: hidden;
+      border: 2px dashed rgba(255, 92, 166, 0.28);
+    }
+
+    .main-button {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(var(--rotation, 0deg));
+      min-width: 210px;
+      min-height: 68px;
+      padding: 18px 28px;
+      border-radius: 999px;
+      background: #111;
+      color: white;
+      font-size: clamp(18px, 3vw, 25px);
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.22);
+      z-index: 3;
+    }
+
+    .main-button.dodge {
+      background: #6c3bff;
+      box-shadow: 0 18px 34px rgba(108, 59, 255, 0.28);
+    }
+
+    .main-button.rapid {
+      background: #ff4f9a;
+      animation: pulse 0.55s infinite alternate;
+    }
+
+    .main-button.consent {
+      background: #20bf6b;
+      box-shadow: 0 18px 34px rgba(32, 191, 107, 0.28);
+      animation: consentPulse 0.45s infinite alternate;
+    }
+
+    .main-button.shake {
+      animation: shake 0.22s linear;
+    }
+
+    .fine-print {
+      display: none;
+      margin-top: 14px;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .fine-print.visible {
+      display: block;
+    }
+
+    .progress-wrap {
+      display: none;
+      margin-top: 16px;
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-wrap.visible {
+      display: block;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ff4f9a, #ffc371);
+      transition: width 0.08s linear;
+    }
+
+    .agreement-card {
+      animation: pop 0.38s ease both;
+    }
+
+    .agreement-title {
+      font-size: clamp(34px, 7vw, 62px);
+      margin-bottom: 12px;
+    }
+
+    .cake {
+      font-size: 72px;
+      margin-bottom: 12px;
+      animation: cakeBounce 0.9s infinite alternate;
+    }
+
+    .contract {
+      text-align: left;
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 20px;
+      background: #fffdf7;
+      border: 2px solid #f2d28b;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+    .contract h3 {
+      text-align: center;
+      margin: 0 0 18px;
+      font-size: 30px;
+    }
+
+    .contract p {
+      color: #333;
+      font-size: 16px;
+      margin-bottom: 13px;
+    }
+
+    .contract .article {
+      margin-top: 17px;
+      padding-top: 14px;
+      border-top: 1px dashed #e1c171;
+    }
+
+    .signature-box {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .signature {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255, 237, 189, 0.48);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .close-area {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .end-screen {
+      background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.28), transparent 30%),
+        linear-gradient(135deg, #ff4f9a, #6c3bff);
+      color: white;
+    }
+
+    .yar {
+      font-size: clamp(70px, 16vw, 170px);
+      font-weight: 1000;
+      letter-spacing: -4px;
+      text-align: center;
+      animation: yar 0.8s infinite alternate ease-in-out;
+      text-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    .end-sub {
+      margin-top: 18px;
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 16px;
+      top: -20px;
+      border-radius: 2px;
+      opacity: 0.9;
+      animation: fall linear forwards;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateX(0); }
+      25% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateX(-8px); }
+      50% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateX(8px); }
+      75% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateX(-5px); }
+      100% { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) translateX(0); }
+    }
+
+    @keyframes pulse {
+      from { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1); }
+      to { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1.08); }
+    }
+
+    @keyframes consentPulse {
+      from { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1); }
+      to { transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1.12); }
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes cakeBounce {
+      from { transform: translateY(0) rotate(-3deg); }
+      to { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    @keyframes yar {
+      from { transform: rotate(-2deg) scale(1); }
+      to { transform: rotate(2deg) scale(1.06); }
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+      }
+    }
+    
+    @media (max-width: 560px) {
+      .screen {
+        padding: 10px;
+      }
+
+      .card {
+        padding: 20px 16px;
+        border-radius: 22px;
+      }
+
+      h1 {
+        font-size: clamp(32px, 10vw, 42px);
+        letter-spacing: -1.2px;
+      }
+
+      h2 {
+        font-size: clamp(26px, 8vw, 34px);
+        letter-spacing: -0.8px;
+      }
+
+      p,
+      .description {
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .description {
+        margin-top: 10px;
+        margin-bottom: 18px;
+      }
+
+      .input-row {
+        margin-top: 18px;
+        gap: 8px;
+      }
+
+      input {
+        padding: 13px 14px;
+      }
+
+      button {
+        padding: 13px 18px;
+        font-size: 15px;
+      }
+
+      .game-card {
+        width: 100%;
+        height: calc(100vh - 20px);
+        height: calc(100dvh - 20px);
+        min-height: 0;
+        padding: 14px 12px;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .top-status {
+        justify-content: center;
+        margin-bottom: 8px;
+      }
+
+      .status-pill {
+        padding: 7px 11px;
+        font-size: 12px;
+      }
+
+      .message-box {
+        height: 92px;
+        min-height: 92px;
+        max-height: 92px;
+        padding: 10px 10px;
+        margin-bottom: 10px;
+        border-radius: 18px;
+        overflow: hidden;
+      }
+
+      .message {
+        font-size: 25px;
+        line-height: 1.22;
+      }
+
+      .button-field {
+        flex: 1;
+        min-height: 0;
+        border-radius: 20px;
+      }
+
+      .main-button {
+        min-width: 158px;
+        min-height: 54px;
+        padding: 13px 18px;
+        font-size: clamp(16px, 5vw, 20px);
+      }
+
+      .progress-wrap {
+        margin-top: 9px;
+        height: 10px;
+      }
+
+      .fine-print {
+        margin-top: 7px;
+        font-size: 10px;
+        line-height: 1.35;
+      }
+
+      .cake {
+        font-size: 56px;
+        margin-bottom: 8px;
+      }
+
+      .contract {
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      .contract h3 {
+        font-size: 24px;
+      }
+
+      .contract p {
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .signature-box {
+        grid-template-columns: 1fr;
+      }
+
+      #showContractButton {
+        right: 14px;
+        bottom: 14px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 1. 도전자 이름 입력 화면 -->
+  <section id="introScreen" class="screen active">
+    <div class="card">
+      <span class="badge">접수처</span>
+      <h1>안녕하세요?</h1>
+      <p class="description">
+        어라, 이 귀한 곳에 이렇게 누추한 분이...<br />
+        흠... 일단 도전하시려면 여따 이름 쓰세요, 이름.
+      </p>
+
+      <div class="input-row">
+        <input id="nameInput" type="text" placeholder="도전자 이름을 입력하세요" autocomplete="off" />
+        <button id="nameSubmitButton" class="primary-button">이름 등록</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1-2. 도전 확인 화면 -->
+  <section id="confirmScreen" class="screen">
+    <div class="card">
+      <span class="badge">도전장</span>
+      <h2 id="challengeQuestion">도전하시겠습니까?</h2>
+      <p class="description">
+        자신 있으세요?ㅋㅋ
+      </p>
+
+      <button id="startButton" class="primary-button">도전하기</button>
+    </div>
+  </section>
+
+  <!-- 2. 버튼 게임 화면 -->
+  <section id="gameScreen" class="screen">
+    <div class="card game-card">
+      <div class="top-status">
+        <div class="status-pill">도전자: <strong id="playerNameLabel">OOO</strong></div>
+      </div>
+
+      <div class="message-box">
+        <div id="message" class="message">
+          아래 버튼을 누르지 않으면 됩니다.
+        </div>
+      </div>
+
+      <div id="buttonField" class="button-field">
+        <button id="mainButton" class="main-button">누르지 마시오</button>
+      </div>
+
+      <div id="progressWrap" class="progress-wrap">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <div id="finePrint" class="fine-print">
+        ※ 버튼을 눌렀을 시 발생하는 결과는 전적으로 도전자의 책임입니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 동의 완료 화면 -->
+  <section id="agreementScreen" class="screen">
+    <div class="card agreement-card">
+      <div class="cake">🍰</div>
+      <h2 class="agreement-title">축하합니다</h2>
+      <p id="agreementText" class="description">
+        당신은 소현이에게 케이크를 사주기로 동의하셨습니다.<br />
+        계약은 철회할 수 없습니다.
+      </p>
+      <button id="showContractButton" class="primary-button">계약서 보기</button>
+    </div>
+  </section>
+
+  <!-- 4. 계약서 화면 -->
+  <section id="contractScreen" class="screen">
+    <div class="card">
+      <span class="badge">전자계약 체결 완료</span>
+      <h2>계약서</h2>
+
+      <div class="contract">
+        <h3>케이크 제공 계약서</h3>
+
+        <p><strong>계약명:</strong> 소현이 케이크 제공에 관한 계약</p>
+        <p><strong>계약 일자:</strong> <span id="contractDate"></span></p>
+        <p><strong>계약 번호:</strong> CAKE-LOVE-1004</p>
+
+        <div class="article">
+          <p><strong>제1조 목적</strong></p>
+          <p>
+            본 계약은 버튼을 누르지 말라는 안내에도 불구하고
+            을이 지속적으로 버튼을 누른 행위에 따라,
+            소현이에게 케이크를 제공하는 것을 목적으로 한다.
+          </p>
+        </div>
+
+        <div class="article">
+          <p><strong>제2조 계약 당사자</strong></p>
+          <p>갑: 소현</p>
+          <p>을: <span id="contractName">OOO</span></p>
+        </div>
+
+        <div class="article">
+          <p><strong>제3조 을의 의무</strong></p>
+          <p>
+            을은 가까운 시일 내에 소현이에게 맛있는 케이크를 제공한다.
+            케이크의 종류, 크기, 맛, 구매처는 소현이의 의견을 적극 반영한다.
+          </p>
+        </div>
+
+        <div class="article">
+          <p><strong>제4조 철회 불가</strong></p>
+          <p>
+            을은 “실수였다”, “버튼이 먼저 유혹했다”, “나는 동의한 적 없다”,
+            “손가락이 미끄러졌다” 등의 사유로 본 계약을 철회할 수 없다.
+          </p>
+        </div>
+
+        <div class="article">
+          <p><strong>제5조 특약사항</strong></p>
+          <p>
+            을이 계약을 성실히 이행할 경우,
+            소현이의 기분이 매우 좋아질 수 있다.
+          </p>
+        </div>
+
+        <div class="signature-box">
+          <div class="signature">갑 소현</div>
+          <div class="signature">을 <span id="signatureName">OOO</span></div>
+        </div>
+      </div>
+
+      <div class="close-area">
+        <button id="closeButton" class="secondary-button">닫기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 엔딩 화면 -->
+  <section id="endScreen" class="screen end-screen">
+    <div>
+      <div class="yar">야르~~~~</div>
+      <div class="end-sub">도전 종료 · 근데 계약은 평생 유효~~~ㅋㅋ^^</div>
+    </div>
+  </section>
+
+  <script>
+    const introScreen = document.getElementById("introScreen");
+    const confirmScreen = document.getElementById("confirmScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const agreementScreen = document.getElementById("agreementScreen");
+    const contractScreen = document.getElementById("contractScreen");
+    const endScreen = document.getElementById("endScreen");
+
+    const nameInput = document.getElementById("nameInput");
+    const nameSubmitButton = document.getElementById("nameSubmitButton");
+    const startButton = document.getElementById("startButton");
+    const challengeQuestion = document.getElementById("challengeQuestion");
+
+    const playerNameLabel = document.getElementById("playerNameLabel");
+
+    const message = document.getElementById("message");
+    const buttonField = document.getElementById("buttonField");
+    const mainButton = document.getElementById("mainButton");
+
+    const progressWrap = document.getElementById("progressWrap");
+    const progressBar = document.getElementById("progressBar");
+    const finePrint = document.getElementById("finePrint");
+
+    const agreementText = document.getElementById("agreementText");
+    const showContractButton = document.getElementById("showContractButton");
+
+    const contractDate = document.getElementById("contractDate");
+    const contractName = document.getElementById("contractName");
+    const signatureName = document.getElementById("signatureName");
+
+    const closeButton = document.getElementById("closeButton");
+
+    let playerName = "남자친구";
+    let clickCount = 0;
+    let dodgeMode = false;
+    let gameEnded = false;
+    let dodgeAttemptCount = 0;
+    let lastDodgeTime = 0;
+    let rapidMode = false;
+    let consentReady = false;
+    let rapidGauge = 0;
+    let rapidTimer = null;
+    let rapidMessageLevel = "";
+    let rapidHasStarted = false;
+    let rapidIntroLockedUntil = 0;
+
+    const RAPID_CLICK_GAIN = 6;
+    const RAPID_DECAY_AMOUNT = 1.1;
+    const RAPID_DECAY_INTERVAL = 100;
+
+    const stages = {
+      0: {
+        text: "누르지 마시오",
+        message: "버튼을 누르지 마시오."
+      },
+      1: {
+        text: "누르지 마시오",
+        message: "어? 방금 누르심?"
+      },
+      2: {
+        text: "진짜 누르지 마",
+        message: "이번 한 번만 봐드릴게요."
+      },
+      3: {
+        text: "누르지 말라니까?",
+        message: "아니 진짜 누르지 말라니까요?"
+      },
+      4: {
+        text: "설마 또?",
+        message: "사람 말을 잘 안 듣는 편이군요."
+      },
+      5: {
+        text: "잡아보세요",
+        message: "경고.\n버튼 회피 모드가 활성화되었습니다."
+      },
+      6: {
+        text: "이정돈 껌이죠",
+        message: "어케 눌렀누"
+      },
+      7: {
+        text: "이번엔 누르지 말라고 안했는데..",
+        message: "아니 왜 또 누르는데"
+      },
+      8: {
+        text: "연타하기",
+        message: "그렇게 누르고 싶어?\n그럼 연타해봐."
+      },
+      9: {
+        text: "연타하기",
+        message: "연타 감지 중."
+      },
+      10: {
+        text: "연타하기",
+        message: "연타 감지 중.."
+      },
+      11: {
+        text: "연타하기",
+        message: "연타 감지 중...\n손가락 과열 감지."
+      },
+      12: {
+        text: "연타하기",
+        message: "클릭 욕구 분석 중...\n결과: 통제 불가."
+      },
+      13: {
+        text: "연타하기",
+        message: "계약서 생성 중...\n거의 다 왔습니다."
+      },
+      14: {
+        text: "동의하기",
+        message: "계속 누르세요.\n이제 진짜 마지막입니다."
+      }
+    };
+
+    function showScreen(screen) {
+      [introScreen, confirmScreen, gameScreen, agreementScreen, contractScreen, endScreen].forEach((item) => {
+        item.classList.remove("active");
+      });
+
+      screen.classList.add("active");
+    }
+
+    function submitName() {
+      const typedName = nameInput.value.trim();
+
+      playerName = typedName || "도전자";
+      challengeQuestion.replaceChildren(
+        document.createTextNode(`${playerName} 님,`),
+        document.createElement("br"),
+        document.createTextNode("도전하시겠습니까?")
+      );
+      showScreen(confirmScreen);
+    }
+
+    function startGame() {
+      clickCount = 0;
+      dodgeMode = false;
+      gameEnded = false;
+      dodgeAttemptCount = 0;
+      lastDodgeTime = 0;
+
+      rapidMode = false;
+      consentReady = false;
+      rapidGauge = 0;
+      rapidMessageLevel = "";
+      rapidHasStarted = false;
+      rapidIntroLockedUntil = 0;
+      clearRapidTimer();
+
+      playerNameLabel.textContent = playerName;
+      setMessageText(stages[0].message);
+      mainButton.textContent = stages[0].text;
+
+      mainButton.className = "main-button";
+      progressWrap.classList.remove("visible");
+      finePrint.classList.remove("visible");
+      progressBar.style.width = "0%";
+
+      centerButton();
+      showScreen(gameScreen);
+    }
+
+    function centerButton() {
+      mainButton.style.left = "50%";
+      mainButton.style.top = "50%";
+      mainButton.style.setProperty("--rotation", "0deg");
+    }
+
+  function moveButtonRandomly() {
+    const x = randomNumber(12, 88);
+    const y = randomNumber(14, 86);
+    const rotation = randomNumber(-30, 30);
+
+    mainButton.style.left = `${x}%`;
+    mainButton.style.top = `${y}%`;
+    mainButton.style.setProperty("--rotation", `${rotation}deg`);
+  }
+
+  function moveButtonAwayFromPointer(event) {
+    const fieldRect = buttonField.getBoundingClientRect();
+
+    let bestX = 50;
+    let bestY = 50;
+    let bestDistance = -1;
+
+    const isEasyMode = dodgeAttemptCount > 10;
+
+    const minX = isEasyMode ? 25 : 8;
+    const maxX = isEasyMode ? 75 : 92;
+    const minY = isEasyMode ? 25 : 10;
+    const maxY = isEasyMode ? 75 : 90;
+    const candidateCount = isEasyMode ? 10 : 60;
+
+    for (let i = 0; i < candidateCount; i += 1) {
+      const candidateX = randomNumber(minX, maxX);
+      const candidateY = randomNumber(minY, maxY);
+
+      const candidatePixelX = fieldRect.left + (fieldRect.width * candidateX) / 100;
+      const candidatePixelY = fieldRect.top + (fieldRect.height * candidateY) / 100;
+
+      const distance = Math.hypot(
+        candidatePixelX - event.clientX,
+        candidatePixelY - event.clientY
+      );
+
+      if (distance > bestDistance) {
+        bestDistance = distance;
+        bestX = candidateX;
+        bestY = candidateY;
+      }
+    }
+
+    const rotation = isEasyMode ? randomNumber(-8, 8) : randomNumber(-35, 35);
+
+    mainButton.style.left = `${bestX}%`;
+    mainButton.style.top = `${bestY}%`;
+    mainButton.style.setProperty("--rotation", `${rotation}deg`);
+  }
+
+  function tryDodge(event) {
+    if (!dodgeMode) return;
+
+    const now = Date.now();
+    const isEasyMode = dodgeAttemptCount >= 10;
+
+    const cooldown = isEasyMode ? 520 : 90;
+    const dodgeChance = isEasyMode ? 0.28 : 1;
+
+    if (now - lastDodgeTime < cooldown) return;
+
+    dodgeAttemptCount += 1;
+    lastDodgeTime = now;
+
+    if (Math.random() < dodgeChance) {
+      moveButtonAwayFromPointer(event);
+    }
+  }
+
+    function randomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function setMessageText(text) {
+      message.textContent = text;
+      requestAnimationFrame(fitMessageText);
+    }
+
+    function fitMessageText() {
+      const messageBox = message.parentElement;
+
+      if (!messageBox) return;
+
+      const boxStyle = window.getComputedStyle(messageBox);
+      const availableHeight =
+        messageBox.clientHeight -
+        parseFloat(boxStyle.paddingTop) -
+        parseFloat(boxStyle.paddingBottom);
+
+      const availableWidth =
+        messageBox.clientWidth -
+        parseFloat(boxStyle.paddingLeft) -
+        parseFloat(boxStyle.paddingRight);
+
+      if (availableHeight <= 0 || availableWidth <= 0) return;
+
+      let fontSize = window.innerWidth <= 560 ? 25 : 34;
+      const minFontSize = window.innerWidth <= 560 ? 14 : 18;
+
+      message.style.fontSize = `${fontSize}px`;
+
+      while (
+        (message.scrollHeight > availableHeight || message.scrollWidth > availableWidth) &&
+        fontSize > minFontSize
+      ) {
+        fontSize -= 1;
+        message.style.fontSize = `${fontSize}px`;
+      }
+    }
+
+    function shakeButton() {
+      mainButton.classList.remove("shake");
+
+      // 애니메이션 재실행용
+      void mainButton.offsetWidth;
+
+      mainButton.classList.add("shake");
+    }
+
+    function setProgressPercent(percent) {
+      const safePercent = Math.max(0, Math.min(100, percent));
+      progressBar.style.width = `${safePercent}%`;
+    }
+
+    function clearRapidTimer() {
+      if (rapidTimer !== null) {
+        clearInterval(rapidTimer);
+        rapidTimer = null;
+      }
+    }
+
+    function enterRapidMode() {
+      rapidMode = true;
+      consentReady = false;
+      rapidGauge = 0;
+      rapidMessageLevel = "";
+      rapidHasStarted = false;
+
+      // 이 시간 동안은 8번 멘트가 다른 멘트로 덮이지 않게 보호
+      rapidIntroLockedUntil = Date.now() + 1200;
+
+      dodgeMode = false;
+      centerButton();
+
+      mainButton.classList.remove("dodge", "consent");
+      mainButton.classList.add("rapid");
+      mainButton.textContent = "연타하기";
+
+      progressWrap.classList.add("visible");
+      finePrint.classList.add("visible");
+      finePrint.textContent = "※ 연타를 멈추면 게이지가 줄어듭니다.";
+
+      setProgressPercent(0);
+      setMessageText("그렇게 누르고 싶어?\n그럼 연타해봐.");
+
+      startRapidDrain();
+    }
+
+    function startRapidDrain() {
+      clearRapidTimer();
+
+      rapidTimer = setInterval(() => {
+        if (!rapidMode || consentReady || gameEnded) return;
+
+        // 아직 연타를 시작하지 않았으면 게이지 감소도, 멘트 변경도 안 함
+        if (!rapidHasStarted) return;
+
+        rapidGauge = Math.max(0, rapidGauge - RAPID_DECAY_AMOUNT);
+        updateRapidGauge();
+      }, RAPID_DECAY_INTERVAL);
+    }
+
+    function handleRapidClick() {
+      if (!rapidMode || consentReady) return;
+
+      rapidHasStarted = true;
+
+      shakeButton();
+
+      rapidGauge = Math.min(100, rapidGauge + RAPID_CLICK_GAIN);
+      updateRapidGauge();
+
+      if (rapidGauge >= 100) {
+        completeRapidChallenge();
+      }
+    }
+
+    function updateRapidGauge() {
+      setProgressPercent(rapidGauge);
+
+      // 8번 인트로 멘트 보호 시간 동안은 문구를 바꾸지 않음
+      if (Date.now() < rapidIntroLockedUntil) return;
+
+      let nextLevel = "";
+
+      if (rapidGauge < 20) {
+        nextLevel = "low";
+      } else if (rapidGauge < 45) {
+        nextLevel = "middle";
+      } else if (rapidGauge < 70) {
+        nextLevel = "hot";
+      } else if (rapidGauge < 95) {
+        nextLevel = "almost";
+      } else {
+        nextLevel = "finish";
+      }
+
+      if (nextLevel === rapidMessageLevel) return;
+
+      rapidMessageLevel = nextLevel;
+
+      if (nextLevel === "low") {
+        setMessageText("연타 안 하면 줄어듭니다.\n빨리 눌러보시지요?");
+      } else if (nextLevel === "middle") {
+        setMessageText("오... 조금 하는데?\n근데 아직 멀었는데요.");
+      } else if (nextLevel === "hot") {
+        setMessageText("연타 감지 중...\n손가락 과열 감지.");
+      } else if (nextLevel === "almost") {
+        setMessageText("계약서 생성 중...\n조금만 더 누르세요.");
+      } else if (nextLevel === "finish") {
+        setMessageText("거의 다 왔습니다.\n마지막 스퍼트.");
+      }
+    }
+
+    function completeRapidChallenge() {
+      rapidMode = false;
+      consentReady = true;
+      clearRapidTimer();
+
+      rapidGauge = 100;
+      setProgressPercent(100);
+
+      centerButton();
+
+      mainButton.classList.remove("rapid", "dodge");
+      mainButton.classList.add("consent");
+      mainButton.textContent = "동의하기";
+
+      setMessageText("연타 인증 완료.\n마지막으로 한 번만 누르세요.");
+    }
+
+    function handleButtonClick() {
+      if (gameEnded) return;
+
+      if (consentReady) {
+        shakeButton();
+        showAgreement();
+        return;
+      }
+
+      if (rapidMode) {
+        handleRapidClick();
+        return;
+      }
+
+      clickCount += 1;
+      shakeButton();
+
+      const stage = stages[clickCount] || stages[8];
+
+      setMessageText(stage.message);
+      mainButton.textContent = stage.text;
+
+      mainButton.classList.remove("dodge", "rapid", "consent");
+
+      if (clickCount === 5) {
+        dodgeMode = true;
+        mainButton.classList.add("dodge");
+        moveButtonRandomly();
+      } else if (clickCount === 8) {
+        enterRapidMode();
+      } else {
+        dodgeMode = false;
+        centerButton();
+      }
+    }
+
+    function showAgreement() {
+      gameEnded = true;
+      dodgeMode = false;
+      rapidMode = false;
+      consentReady = false;
+      clearRapidTimer();
+
+      showContractButton.classList.add("waiting");
+      showContractButton.disabled = true;
+      showContractButton.textContent = "계약서 준비 중...";
+
+      agreementText.innerHTML = `
+        ${playerName}님은 소현이에게 케이크를 사주기로 동의하셨습니다.<br />
+        계약은 철회할 수 없습니다.
+      `;
+
+      createConfetti(90);
+      showScreen(agreementScreen);
+
+      setTimeout(() => {
+        showContractButton.classList.remove("waiting");
+        showContractButton.disabled = false;
+        showContractButton.textContent = "계약서 보기";
+      }, 3000);
+    }
+
+    function showContract() {
+      const today = new Date();
+      const dateText = today.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      });
+
+      contractDate.textContent = dateText;
+      contractName.textContent = playerName;
+      signatureName.textContent = playerName;
+
+      showScreen(contractScreen);
+    }
+
+    function showEnding() {
+      createConfetti(150);
+      showScreen(endScreen);
+    }
+
+    function createConfetti(count) {
+      const colors = ["#ff4f9a", "#ffd166", "#6c3bff", "#20bf6b", "#4dabf7"];
+
+      for (let i = 0; i < count; i += 1) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = `${randomNumber(2, 5)}s`;
+        piece.style.animationDelay = `${Math.random() * 0.8}s`;
+        piece.style.transform = `rotate(${randomNumber(0, 360)}deg)`;
+
+        document.body.appendChild(piece);
+
+        setTimeout(() => {
+          piece.remove();
+        }, 6000);
+      }
+    }
+
+    nameSubmitButton.addEventListener("click", submitName);
+
+    nameInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        submitName();
+      }
+    });
+
+    startButton.addEventListener("click", startGame);
+
+    mainButton.addEventListener("click", handleButtonClick);
+
+    mainButton.addEventListener("mouseenter", (event) => {
+      tryDodge(event);
+    });
+
+    buttonField.addEventListener("mousemove", (event) => {
+      if (!dodgeMode) return;
+
+      const buttonRect = mainButton.getBoundingClientRect();
+      const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+      const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+      const distance = Math.hypot(
+        event.clientX - buttonCenterX,
+        event.clientY - buttonCenterY
+      );
+
+      const isEasyMode = dodgeAttemptCount >= 10;
+      const triggerDistance = isEasyMode ? 75 : 220;
+
+      if (distance < triggerDistance) {
+        tryDodge(event);
+      }
+    });
+
+    showContractButton.addEventListener("click", showContract);
+
+    closeButton.addEventListener("click", showEnding);
+
+    window.addEventListener("resize", fitMessageText);
+  </script>
+</body>
+</html>
